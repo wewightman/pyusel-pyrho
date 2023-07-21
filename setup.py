@@ -1,23 +1,23 @@
 from setuptools import Extension, setup
 
-# load the C extentsion library
+# Compile the C extension and put it in the "rho" folder
 rho = Extension(
-    name="pycbf.trig._trig",
-    include_dirs=["pycbf/trig"],
-    depends=["pycbf/trig/trigengines.h"],
-    sources=["pycbf/trig/trigengines.c"]
+    name="pyrho.rho.__rho__",
+    include_dirs=["pyrho/rho"],
+    depends=["pyrho/rho/rho.h"],
+    sources=["pyrho/rho/rho.c"]
 )
 
 # run setup tools
 setup(
-    name='pyusel-pycbf',
-    description="C-Backed beamforming engines",
+    name='pyusel-pyrho',
+    description="C-Backed ultrasound coherence toolkit",
     author_email="wew12@duke.edu",
-    packages=['pycbf', 'pycbf.trig', 'pycbf.trig._trig'],
+    packages=['pyrho', 'pyrho.rho', 'pyrho.rho.__rho__'],
     package_dir={
-        'pycbf':'pycbf', 
-        'pycbf.trig':'pycbf/trig',
-        'pycbf.trig._trig':'pycbf/trig'
+        'pyrho':'pycbf', 
+        'pyrho.rho':'pyrho/rho',
+        'pyrho.rho.__rho__':'pyrho/rho'
     },
     license="MIT",
     ext_modules=[rho],
