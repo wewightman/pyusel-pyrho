@@ -20,6 +20,7 @@ float lagNRho(float *** input, int M, int N, int lag)
     int m, n;
 
     // calculate and subtract the mean of each element
+    if (PYUSEL_DEBUG) printf("Subtracting avg:\n");
     for(m=0; m<(M-lag); ++m)
     {
         // get the signals of the elements m and m+lag
@@ -30,13 +31,16 @@ float lagNRho(float *** input, int M, int N, int lag)
 
         // Calculate the mean
         for (n=0; n<N; ++n) cross += vec1[n];
+        if (PYUSEL_DEBUG) printf("  vector sum: %e\n", cross);
         cross /= (float) N;
+        if (PYUSEL_DEBUG) printf("  vector avg: %e\n", cross);
 
         // subtract the mean
         for (n=0; n<N; ++n) vec1[n] -= cross;
     }
 
     // Calculate and sum the normalized cross correlation for all element pairs
+    if (PYUSEL_DEBUG) printf("Calculating norm x-corr:\n");
     output = 0.0f;
     for(m=0; m<(M-lag); ++m)
     {
@@ -59,9 +63,15 @@ float lagNRho(float *** input, int M, int N, int lag)
 
         // calculate normalized cross correllation and sum with previous
         output += cross/sqrtf(self1*self2);
+        if (PYUSEL_DEBUG) printf("  This covariance is: %e\n", cross/sqrtf(self1*self2));
     }
+
+    if (PYUSEL_DEBUG) printf("Pre-division: %e\n", output);
 
     // convert sum to mean
     output /= (float)(M-lag);
+
+    if (PYUSEL_DEBUG) printf("Post division: %e\n", output);
+    if (PYUSEL_DEBUG) printf("Post division: %p\n", (void*) &output);
     return output;
 }
