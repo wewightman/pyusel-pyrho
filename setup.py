@@ -19,6 +19,10 @@ setup(
         'pyrho.rho':'pyrho/rho',
         'pyrho.rho.__rho__':'pyrho/rho'
     },
+    install_requires = [
+        "numpy",
+        "pyusel-cinpy @ https://github.com/wewightman/pyusel-cinpy/archive/main.tar.gz",
+    ],
     license="MIT",
     ext_modules=[rho],
     version="0.0.0"
