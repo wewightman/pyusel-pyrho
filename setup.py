@@ -15,7 +15,7 @@ setup(
     author_email="wew12@duke.edu",
     packages=['pyrho', 'pyrho.rho', 'pyrho.rho.__rho__'],
     package_dir={
-        'pyrho':'pycbf', 
+        'pyrho':'pyrho', 
         'pyrho.rho':'pyrho/rho',
         'pyrho.rho.__rho__':'pyrho/rho'
     },
