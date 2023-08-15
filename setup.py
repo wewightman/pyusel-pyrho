@@ -8,22 +8,32 @@ rho = Extension(
     sources=["pyrho/rho/rho.c"]
 )
 
+# Compile the C extension and put it in the "rho" folder
+trig = Extension(
+    name="pyrho.trig.__trig__",
+    include_dirs=["pyrho/trig"],
+    depends=["pyrho/trig/trig.h"],
+    sources=["pyrho/trig/trig.c"]
+)
+
 # run setup tools
 setup(
     name='pyusel-pyrho',
     description="C-Backed ultrasound coherence toolkit",
     author_email="wew12@duke.edu",
-    packages=['pyrho', 'pyrho.rho', 'pyrho.rho.__rho__'],
+    packages=['pyrho', 'pyrho.rho', 'pyrho.rho.__rho__', 'pyrho.trig', 'pyrho.trig.__trig__'],
     package_dir={
         'pyrho':'pyrho', 
         'pyrho.rho':'pyrho/rho',
-        'pyrho.rho.__rho__':'pyrho/rho'
+        'pyrho.rho.__rho__':'pyrho/rho',
+        'pyrho.trig':'pyrho/trig', 
+        'pyrho.trig.__trig__':'pyrho/trig',
     },
     install_requires = [
         "numpy",
         "pyusel-cinpy @ https://github.com/wewightman/pyusel-cinpy/archive/main.tar.gz",
     ],
     license="MIT",
-    ext_modules=[rho],
+    ext_modules=[rho, trig],
     version="0.0.0"
 )
