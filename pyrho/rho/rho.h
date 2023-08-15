@@ -1,5 +1,5 @@
-#ifndef ___pyusel_pyrho___
-#define ___pyusel_pyrho___
+#ifndef ___pyusel_pyrho_rho___
+#define ___pyusel_pyrho_rho___
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
