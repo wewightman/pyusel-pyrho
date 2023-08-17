@@ -32,6 +32,7 @@ setup(
     install_requires = [
         "numpy",
         "pyusel-cinpy @ https://github.com/wewightman/pyusel-cinpy/archive/main.tar.gz",
+        "pyusel-interp @ https://github.com/wewightman/pyusel-interp/archive/main.tar.gz",
     ],
     license="MIT",
     ext_modules=[rho, trig],
