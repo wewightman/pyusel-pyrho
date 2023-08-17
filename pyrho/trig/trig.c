@@ -60,6 +60,8 @@ float * pwtxengine(int N, float c, float tref, float ** pref, float ** pnorm, fl
             printf("%05d: dot(%0.03e, %0.03e, %0.03e)/c = %0.03e us\n", i, xdiff, ydiff, zdiff, 1e6f*tau[i]);
         }
     }
+
+    return tau;
 }
 
 /**
