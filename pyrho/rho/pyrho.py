@@ -1,6 +1,6 @@
 """Python wrapper for c-type coherence functions"""
 import ctypes as ct
-import cinpy.types as cnpt
+import cinpy as cnp
 import numpy as np
 from glob import glob
 import platform as _pltfm
@@ -46,13 +46,13 @@ def lagNRho(arr, lag:int=1, axis:int=1):
     
     # Make the sample axis the fast axis
     if axis == 1:
-        c_arr, M, N = cnpt.copy2c(arr.T)
+        c_arr, M, N = cnp.copy2c(arr.T)
     else:
-        c_arr, M, N = cnpt.copy2c(arr)
+        c_arr, M, N = cnp.copy2c(arr)
 
     # calculate the lag
     rho = __rho__.lagNRho(ct.byref(c_arr), M, N, ct.c_int(lag))
-    cnpt.free(c_arr, M, N)
+    cnp.free(c_arr, M, N)
 
     # return the python-friendly value
     return float(rho)
@@ -77,10 +77,10 @@ def RofM(arr, axis:int=1):
     
     # Make the sample axis the fast axis
     if axis == 1:
-        c_arr, M, N = cnpt.copy2c(arr.T)
+        c_arr, M, N = cnp.copy2c(arr.T)
         nele = arr.shape[1]
     else:
-        c_arr, M, N = cnpt.copy2c(arr)
+        c_arr, M, N = cnp.copy2c(arr)
         nele = arr.shape[0]
 
     # make a buffer
@@ -90,7 +90,7 @@ def RofM(arr, axis:int=1):
         # calculate the lag
         rho = __rho__.lagNRho(ct.byref(c_arr), M, N, ct.c_int(lag))
         rhos[lag] = float(rho)
-    cnpt.free(c_arr, M, N)
+    cnp.free(c_arr, M, N)
 
     # return the python-friendly value
     return rhos

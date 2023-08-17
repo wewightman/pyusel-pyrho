@@ -1,6 +1,6 @@
 """Python wrapper for c-type coherence functions"""
 import ctypes as ct
-import cinpy.types as cnpt
+import cinpy as cnp
 import numpy as np
 from glob import glob
 import platform as _pltfm
@@ -53,8 +53,8 @@ def geteletaus(eles, points, c:float=1540):
 
     # extract constants
     # convert eles and points to c arrays
-    Celes, Me, Ne = cnpt.copy2c(eles)
-    Cpoints, Mp, Np = cnpt.copy2c(points)
+    Celes, Me, Ne = cnp.copy2c(eles)
+    Cpoints, Mp, Np = cnp.copy2c(points)
 
     TauEs = []
     for i in range(Me.value):

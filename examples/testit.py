@@ -1,6 +1,6 @@
 from pyrho.trig import geteletaus
 import numpy as np
-import cinpy.types as cnt
+import cinpy as cnp
 import ctypes as ct
 import matplotlib.pyplot as plt
 
@@ -25,7 +25,7 @@ print(field.shape)
 taus = geteletaus(eles, field)
 print(len(taus))
 print(taus[0])
-tau0 = cnt.copy2py(taus[nele//2], ct.c_int(field.shape[0]))
+tau0 = cnp.copy2py(taus[nele//2], ct.c_int(field.shape[0]))
 print(tau0.shape)
 
 plt.figure()
