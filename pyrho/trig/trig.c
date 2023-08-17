@@ -36,11 +36,12 @@ float * rxengine(int N, float c, float ** pref, float *** ppoints) {
  * Calculate the temporal distance from reference point to each point in the field
  * N: number of points in field
  * c: speed of sound [m/s]
+ * tref: delay tab of reference element
  * ref: (x, y, z) coordinate of reference point [m]
  * norm: (x, y, z) normal vector
  * xfield, nx, yfield, ny, zfield, nz: pointers to length N arrays of (x, y, z) coordinates in field
  */
-float * pwtxengine(int N, float c, float ** pref, float ** pnorm, float *** ppoints) {
+float * pwtxengine(int N, float c, float tref, float ** pref, float ** pnorm, float *** ppoints) {
     // iterate through each point
     float xdiff, ydiff, zdiff;
     float * tau = (float *) malloc(sizeof(float) * N);
@@ -53,11 +54,11 @@ float * pwtxengine(int N, float c, float ** pref, float ** pnorm, float *** ppoi
         ydiff = norm[1] * (points[i][1] - ref[1]);
         zdiff = norm[2] * (points[i][2] - ref[2]);
 
-        if (PYUSEL_TRIG_DEBUG){
+        tau[i] = (xdiff + ydiff + zdiff)/c + tref;
 
+        if (PYUSEL_TRIG_DEBUG) {
+            printf("%05d: dot(%0.03e, %0.03e, %0.03e)/c = %0.03e us\n", i, xdiff, ydiff, zdiff, 1e6f*tau[i]);
         }
-
-        tau[i] = (xdiff + ydiff + zdiff)/c;
     }
 }
 
