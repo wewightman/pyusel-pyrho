@@ -63,3 +63,35 @@ def geteletaus(eles, points, c:float=1540):
 
     return TauEs
 
+def getpwtaus(eles, points, teles, thetas, c=1540):
+    """Calculate the delays for each element transition to each point - assuming plane wave tx
+
+    Parameters:
+    ----
+    eles: location of each element, E by 3 matrix
+    points: each point being interrogated, P by 3 matrix
+    teles: time delay of each element at transmission, length E vector
+    thetas: steering angle of each plane wave, length E vector
+    c: assumed speed of sound
+
+    Return:
+    ----
+    TauTx: a list of times needed to reach a given point, length E list of length P vectors
+    """
+
+    # convert eles and points to c arrays
+    Celes, Me, Ne = cnp.copy2c(eles)
+    Cpoints, Mp, Np = cnp.copy2c(points)
+    Cteles, Mt = cnp.copy2c(teles.flatten())
+    Cc = ct.c_float(c)
+
+    if (Me.value != Mt.value) or (Mt.value != thetas.size):
+        raise ValueError("All variables correxponding to the elements must have the same number of units")
+    
+    TauTx = []
+    for ie in range(Me.value):
+        pnorm = (ct.c_float * 3)(ct.c_float(np.sin(thetas[ie])), ct.c_float(np.cos(thetas[ie])), ct.c_float(0))
+        tau = __trig__.pwtxengine(Mp, Cc, teles[ie], ct.byref(Celes[ie]), ct.byref(pnorm), ct.byref(Cpoints))
+        TauTx.append(tau)
+
+    return TauTx
