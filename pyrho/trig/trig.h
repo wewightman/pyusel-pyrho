@@ -10,6 +10,6 @@ extern int * genmask3D(int N, float fnum, int dyn, float ** pnap, float ** pfocu
 
 #endif
 
-#ifndef PYUSEL_DEBUG
-#define PYUSEL_DEBUG 0
+#ifndef PYUSEL_TRIG_DEBUG
+#define PYUSEL_TRIG_DEBUG 0
 #endif

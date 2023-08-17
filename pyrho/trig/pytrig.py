@@ -57,7 +57,7 @@ def geteletaus(eles, points, c:float=1540):
     Cpoints, Mp, Np = cnpt.copy2c(points)
 
     TauEs = []
-    for i in range(Me):
+    for i in range(Me.value):
         ptaue = __trig__.rxengine(Mp, ct.c_float(c), ct.byref(Celes[i]), ct.byref(Cpoints))
         TauEs.append(ptaue)
 

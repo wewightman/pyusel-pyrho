@@ -1,3 +1,5 @@
+#include "trig.h"
+
 /**
  * rxengine
  * Calculate the temporal distance from reference point to each point in the field
@@ -19,7 +21,11 @@ float * rxengine(int N, float c, float ** pref, float *** ppoints) {
         ydiff = points[i][1] - ref[1];
         zdiff = points[i][2] - ref[2];
 
-        tau[i] += sqrtf(xdiff*xdiff + ydiff*ydiff + zdiff*zdiff)/c;
+        tau[i] = sqrtf(xdiff*xdiff + ydiff*ydiff + zdiff*zdiff)/c;
+
+        if (PYUSEL_TRIG_DEBUG) {
+            printf("%05d: norm(%0.03e, %0.03e, %0.03e)/c = %0.03e us\n", i, xdiff, ydiff, zdiff, 1e6f*tau[i]);
+        }
     }
 
     return tau;
@@ -47,7 +53,11 @@ float * pwtxengine(int N, float c, float ** pref, float ** pnorm, float *** ppoi
         ydiff = norm[1] * (points[i][1] - ref[1]);
         zdiff = norm[2] * (points[i][2] - ref[2]);
 
-        tau[i] += (xdiff + ydiff + zdiff)/c;
+        if (PYUSEL_TRIG_DEBUG){
+
+        }
+
+        tau[i] = (xdiff + ydiff + zdiff)/c;
     }
 }
 
