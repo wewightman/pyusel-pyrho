@@ -39,7 +39,7 @@ def geteletaus(eles, points, c:float=1540):
     ----
     eles: E by 3 matrix where E is the number of elements
     points: P by 3 matrix where P is the number of points
-    c: speed of sound, default is 1540 M/s
+    c: speed of sound, default is 1540 m/s
 
     Returns:
     ----
@@ -49,7 +49,7 @@ def geteletaus(eles, points, c:float=1540):
     if (np.ndim(eles) != 2): raise ValueError("eles must be 2D")
     if (eles.shape[1] != 3):raise ValueError("eles must be E by 3")
     if (np.ndim(points) != 2): raise ValueError("points must be 2D")
-    if (points.shape[1] != 3):raise ValueError("points must be E by 3")
+    if (points.shape[1] != 3):raise ValueError("points must be P by 3")
 
     # extract constants
     # convert eles and points to c arrays
