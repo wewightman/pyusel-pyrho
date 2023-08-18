@@ -16,9 +16,9 @@ zele = np.zeros(nele)
 eles = np.array([xele, yele, zele]).T
 
 fovrange = 30E-3
-xfield = np.linspace(-fovrange/2, fovrange/2, 10)#int(2*fovrange/dele))
+xfield = np.linspace(-fovrange/2, fovrange/2, int(2*fovrange/dele))
 yfield = 0
-zfield = np.linspace(dele , dele+fovrange, 15)#int(4*fovrange/dele))
+zfield = np.linspace(dele , dele+fovrange, int(4*fovrange/dele))
 Xfield, Yfield, Zfield = np.meshgrid(xfield, yfield, zfield, indexing='ij')
 field = np.array([Xfield.flatten(), Yfield.flatten(), Zfield.flatten()]).T
 print(field.shape)
