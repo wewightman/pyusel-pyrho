@@ -21,13 +21,21 @@ setup(
     name='pyusel-pyrho',
     description="C-Backed ultrasound coherence toolkit",
     author_email="wew12@duke.edu",
-    packages=['pyrho', 'pyrho.rho', 'pyrho.rho.__rho__', 'pyrho.trig', 'pyrho.trig.__trig__'],
+    packages=[
+        'pyrho', 
+        'pyrho.rho', 
+        'pyrho.rho.__rho__', 
+        'pyrho.trig', 
+        'pyrho.trig.__trig__', 
+        'pyrho.processors'
+    ],
     package_dir={
         'pyrho':'pyrho', 
         'pyrho.rho':'pyrho/rho',
         'pyrho.rho.__rho__':'pyrho/rho',
         'pyrho.trig':'pyrho/trig', 
         'pyrho.trig.__trig__':'pyrho/trig',
+        'pyrho.processors':'pyrho/processors',
     },
     install_requires = [
         "numpy",
