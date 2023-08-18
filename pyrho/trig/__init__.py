@@ -1,1 +1,1 @@
-from pyrho.trig.pytrig import geteletaus
+from pyrho.trig.pytrig import geteletaus, getpwtaus, c_pw_engine, c_norm_engine

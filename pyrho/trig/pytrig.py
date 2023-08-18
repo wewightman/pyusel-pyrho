@@ -26,7 +26,7 @@ __trig__ = ct.CDLL(name)
 __trig__.rxengine.argtypes = ct.c_int, ct.c_float, ct.POINTER(ct.POINTER(ct.c_float)), ct.POINTER(ct.POINTER(ct.POINTER(ct.c_float))),
 __trig__.rxengine.restype = ct.POINTER(ct.c_float)
 
-__trig__.pwtxengine.argtypes = ct.c_int, ct.c_float, ct.POINTER(ct.POINTER(ct.c_float)), ct.POINTER(ct.POINTER(ct.c_float)), ct.POINTER(ct.POINTER(ct.POINTER(ct.c_float))),
+__trig__.pwtxengine.argtypes = ct.c_int, ct.c_float, ct.c_float, ct.POINTER(ct.POINTER(ct.c_float)), ct.POINTER(ct.POINTER(ct.c_float)), ct.POINTER(ct.POINTER(ct.POINTER(ct.c_float))),
 __trig__.pwtxengine.restype = ct.POINTER(ct.c_float)
 
 __trig__.genmask3D.argtypes = ct.c_int, ct.c_float, ct.POINTER(ct.POINTER(ct.c_float)), ct.POINTER(ct.POINTER(ct.c_float)), ct.POINTER(ct.POINTER(ct.c_float)), ct.POINTER(ct.POINTER(ct.POINTER(ct.c_float))),
@@ -96,3 +96,52 @@ def getpwtaus(eles, points, teles, thetas, c=1540):
 
     return TauTx
 
+def c_pw_engine(xref, tref, norm, points, Np:int, c:float=1540, dtype=ct.c_float):
+    """Calculate the time to travel to each point based on spatial reference, temporal reference, 
+    and normal vector for Ntx transmisions to Np points
+
+    Parameters:
+    ----
+    xrefs: a list of POINTER(dtype) to vector of length 3, represents spatial reference point of wave
+    trefs: a list of 'dtype' elements, represents the temporal reference point of the wave
+    norms: a list of POINTER(dtype) to vector of length 3, represents the normal vector of wave propagation
+    points: a POINTER(POINTER(dtype)) to matrix with size cNp 3 representing point in the field
+    Np: number of points in field
+    c: speed of sound in m/s
+    dtype: ctype datatype - only currently supported option is ctype.c_float
+
+    Return:
+    ----
+    TauTx: length Ntx list of POINTER(ctype) to vector of length Np. aka List of delaytabs to every point for each acq
+    """
+
+    cNp = ct.c_int(Np)
+    cc = ct.c_float(c)
+
+    ptaus = __trig__.pwtxengine(cNp, cc, tref, ct.byref(xref), ct.byref(norm), ct.byref(points))
+
+    return ptaus
+
+def c_norm_engine(xref, points, Np:int, c:float=1540, dtype=ct.c_float):
+    """Calculate the time to travel from each point to each spatial reference
+
+    Parameters:
+    ----
+    xref: a POINTER(dtype) to vector of length 3, represents spatial reference point of wave
+    points: a POINTER(POINTER(dtype)) to matrix with size cNp 3 representing point in the field
+    Np: number of points in field
+    c: speed of sound in m/s
+    dtype: ctype datatype - only currently supported option is ctype.c_float
+
+    Return:
+    ----
+    TauTx: a POINTER(ctype) to vector of length Np. aka delaytabs to every point for each acq
+    """
+
+    cNp = ct.c_int(Np)
+    cc = ct.c_float(c)
+
+    ptaus = __trig__.rxengine(cNp, cc, ct.byref(xref), ct.byref(points))
+
+    return ptaus
+ 
