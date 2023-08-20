@@ -6,6 +6,120 @@ from pyrho.trig import c_norm_engine, c_pw_engine
 
 from abc import ABC, abstractmethod
 
+class DataAxis(dict):
+    @classmethod
+    @abstractmethod
+    def __init__(self):
+        raise NotImplementedError
+    
+    @classmethod
+    @abstractmethod
+    def geti(self, i:int):
+        raise NotImplementedError
+
+class SampledDataAxis(DataAxis):
+    def __init__(self, start, delta, N:int):
+        dict.__init__(self, start=start, delta=delta, N=N)
+    
+    def geti(self, i:int):
+        if (i < 0) or (i >= self['N']): raise IndexError("i must be between 0 and N-1")
+        return self['start'] + i * self['delta']
+    
+class ArbitraryDataAxis(DataAxis):
+    def __init__(self, points):
+        dict.__init__(self, points=points, N=len(points))
+    
+    def geti(self, i:int):
+        if (i < 0) or (i >= self['N']): raise ValueError("i must be between 0 and N-1")
+        return self['points'][i]
+    
+class DataAxisSet(dict):
+    def __init__(self, **kwargs):
+        dict.__init__(self)
+        labels = []
+        shape = []
+        for key, item in kwargs:
+            if not issubclass(DataAxis): raise ValueError("All inputs to DataAxisSet must be of type DataAxis")
+            if (key in self.keys()): raise KeyError("Each key must be unique")
+            self[key] = item
+            labels.append(key)
+            shape.append(item['N'])
+
+        self.labels = tuple(labels)
+        self.shape = tuple(shape)
+
+class RawData(ABC):
+    @classmethod
+    @abstractmethod
+    def getaxes(self):
+        """get list of Axes objects
+        """
+        raise NotImplementedError
+    
+    @classmethod
+    @abstractmethod
+    def transform(self, *args, **kwargs):
+        raise NotImplementedError
+    
+    @classmethod
+    @abstractmethod
+    def getdata(self, *args, **kwargs):
+        raise NotImplementedError
+    
+class RawDataSet(ABC):
+    @classmethod
+    @abstractmethod
+    def __init__(self):
+        raise NotImplementedError
+    
+    @classmethod
+    @abstractmethod
+    def transform(self, *args, **kwargs):
+        raise NotImplementedError
+    
+    @classmethod
+    @abstractmethod
+    def __getitem__(self, *args, **kwargs):
+        raise NotImplementedError
+    
+    @classmethod
+    @abstractmethod
+    def data(self, *args, **kwargs):
+        raise NotImplementedError
+    
+class InterRFDataSet(RawDataSet):
+    def __init__(self, nrot:int, nang:int, nele:int, nsamp:int, dphi, dalpha, Ts, tstart, alpha0=None, phi0=None):
+        """Initialize the InterRFDataSet with given number of rotations, steering angles, elements, and samples with associated sampling periods"""
+        # define the 4 axis of the total transformed dataset
+        if phi0 is None: phi0 = 0
+        rot = SampledDataAxis(phi0, dphi, nrot)
+        if alpha0 is None: alpha0 = -dalpha*(nang-1)/2
+        steer = SampledDataAxis(alpha0, dalpha, nang)
+        ele = SampledDataAxis(0, 1, nele)
+        t = SampledDataAxis(tstart, Ts, nsamp)
+
+        # store the max index for each of the subset indices, selecting by rotation index and steering angle
+        self.nrot = nrot
+
+        # define the shape of the input dataset
+        samples = SampledDataAxis(int(0), int(1), nrot*nang*nele*nsamp)
+
+        # Store the axis sets
+        self.axes_in = DataAxisSet(samples=samples)
+        self.axes_out = DataAxisSet(rot=rot, steer=steer, ele=ele, t=t)
+        self.__data__ = None
+
+    def __getitem__(self, sel):
+        print(sel)
+        pass
+
+    def transform(self, data):
+        print(type(data))
+        pass
+
+    def data(self, type='numpy'):
+        pass
+
 class TXType(ABC):
     @classmethod
     @abstractmethod
@@ -225,7 +339,7 @@ class SLSCProc():
         self.rx.c_gentabs(self.points, self.c_Npoints.value)
 
     def __call__(self, data):
+        """Process a raw 3D data tensor (Ntx by Nrx by Nsamp)"""
         if isinstance(data, np.ndarray):
-            if np.ndim(data) != 2: raise ValueError("Input data must be 2D")
-            data, cMd, cNd = copy2c(data)
+            if np.ndim(data) != 3: raise ValueError("Input data must be 3D (Ntx by Nrx by Nsamp)")
 
