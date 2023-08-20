@@ -82,6 +82,8 @@ class FullRX(RXType):
         if self.RXtabs is not None:
             self.cleartabs()
 
+        self.Np = Np
+
         self.RXtabs = []
         for itx in range(self.Nrx):
             tabs = c_norm_engine(
@@ -162,6 +164,8 @@ class PWTX(TXType):
         if self.TXtabs is not None:
             self.cleartabs()
 
+        self.Np = Np
+
         self.TXtabs = []
         for itx in range(self.Ntx):
             tabs = c_pw_engine(
@@ -221,4 +225,7 @@ class SLSCProc():
         self.rx.c_gentabs(self.points, self.c_Npoints.value)
 
     def __call__(self, data):
-        print("oopa")
+        if isinstance(data, np.ndarray):
+            if np.ndim(data) != 2: raise ValueError("Input data must be 2D")
+            data, cMd, cNd = copy2c(data)
+
