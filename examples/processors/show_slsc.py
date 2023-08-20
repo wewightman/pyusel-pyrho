@@ -2,10 +2,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from ctypes import c_float
 from pyrho.processors.slsc import PWTX, FullRX, SLSCProc
+import os
 import json
 
+exdir = os.path.abspath(os.path.join(__file__, os.pardir))
+probefile = os.path.join(exdir,'probe.json')
+
 # load in-vivo data
-with open('probe.json', 'r') as fp:
+with open(probefile, 'r') as fp:
     probe = json.load(fp)
 
 nang = int(11)
@@ -26,7 +30,7 @@ eles = np.array([xele, yele, zele]).T
 # define the reconstruction points in the field
 xfield = np.linspace(-dele*(nele-2/3)/2, dele*(nele-2/3)/2, 2*nele)
 yfield = 0
-zfield = np.arange(c*fc, 40E-3, 4*c/(2*fc))
+zfield = np.arange(c*tstart, 40E-3, c/(2*fc))
 Xfield, Yfield, Zfield = np.meshgrid(xfield, yfield, zfield, indexing='ij')
 field = np.array([Xfield.flatten(), Yfield.flatten(), Zfield.flatten()]).T
 
@@ -40,3 +44,5 @@ tx = PWTX(alphas, xrefs, trefs, c=c, dtype=c_float)
 rx = FullRX(eles, c=c, dtype=c_float)
 
 loc = SLSCProc(c, field, tx, rx, lags=1)
+
+loc(np.zeros((5,5)))
