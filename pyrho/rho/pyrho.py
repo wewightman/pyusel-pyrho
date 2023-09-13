@@ -26,6 +26,21 @@ __rho__ = ct.CDLL(name)
 __rho__.lagNRho.argtypes = ct.POINTER(ct.POINTER(ct.POINTER(ct.c_float))), ct.c_int, ct.c_int, ct.c_int
 __rho__.lagNRho.restype = ct.c_float
 
+# lagNRhoSet(int lag, int Np, int Ntx, int Nrx, int Nt, float Ts, float tstart, float dtw, float *** tautx, float *** taurx, float **** rf)
+__rho__.lagNRhoSet.argtypes = (
+    ct.c_int, 
+    ct.c_int, 
+    ct.c_int, 
+    ct.c_int, 
+    ct.c_int,
+    ct.c_float,
+    ct.c_float,
+    ct.c_float,
+    ct.POINTER(ct.POINTER(ct.POINTER(ct.c_float))),
+    ct.POINTER(ct.POINTER(ct.POINTER(ct.c_float))),
+    ct.POINTER(ct.POINTER(ct.POINTER(ct.POINTER(ct.c_float)))),)
+__rho__.lagNRhoSet.restype = ct.POINTER(ct.c_float)
+
 def lagNRho(arr, lag:int=1, axis:int=1):
     """calculate the Nth lag of 2D input matrix
     

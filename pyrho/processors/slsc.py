@@ -1,93 +1,19 @@
 """SLSC processing wrapper for a given acq"""
 import ctypes as ct
-from cinpy import copy2c, free
+from cinpy import copy2c, copy2py, free
 import numpy as np
 from pyrho.trig import c_norm_engine, c_pw_engine
-
+from pyusel_types import DataAxisSet, TXType, RXType, NumpyData, SampledDataAxis, DataSet, Data
 from abc import ABC, abstractmethod
 
-class DataAxis(dict):
+class RhoAble(ABC):
     @classmethod
     @abstractmethod
-    def __init__(self):
+    def get_SLSCProc_v1(self):
+        """return an iterator with the axes 't', 'tx', and 'rx'"""
         raise NotImplementedError
     
-    @classmethod
-    @abstractmethod
-    def geti(self, i:int):
-        raise NotImplementedError
-
-class SampledDataAxis(DataAxis):
-    def __init__(self, start, delta, N:int):
-        dict.__init__(self, start=start, delta=delta, N=N)
-    
-    def geti(self, i:int):
-        if (i < 0) or (i >= self['N']): raise IndexError("i must be between 0 and N-1")
-        return self['start'] + i * self['delta']
-    
-class ArbitraryDataAxis(DataAxis):
-    def __init__(self, points):
-        dict.__init__(self, points=points, N=len(points))
-    
-    def geti(self, i:int):
-        if (i < 0) or (i >= self['N']): raise ValueError("i must be between 0 and N-1")
-        return self['points'][i]
-    
-class DataAxisSet(dict):
-    def __init__(self, **kwargs):
-        dict.__init__(self)
-        labels = []
-        shape = []
-        for key, item in kwargs:
-            if not issubclass(DataAxis): raise ValueError("All inputs to DataAxisSet must be of type DataAxis")
-            if (key in self.keys()): raise KeyError("Each key must be unique")
-            self[key] = item
-            labels.append(key)
-            shape.append(item['N'])
-
-        self.labels = tuple(labels)
-        self.shape = tuple(shape)
-
-class RawData(ABC):
-    @classmethod
-    @abstractmethod
-    def getaxes(self):
-        """get list of Axes objects
-        """
-        raise NotImplementedError
-    
-    @classmethod
-    @abstractmethod
-    def transform(self, *args, **kwargs):
-        raise NotImplementedError
-    
-    @classmethod
-    @abstractmethod
-    def getdata(self, *args, **kwargs):
-        raise NotImplementedError
-    
-class RawDataSet(ABC):
-    @classmethod
-    @abstractmethod
-    def __init__(self):
-        raise NotImplementedError
-    
-    @classmethod
-    @abstractmethod
-    def transform(self, *args, **kwargs):
-        raise NotImplementedError
-    
-    @classmethod
-    @abstractmethod
-    def __getitem__(self, *args, **kwargs):
-        raise NotImplementedError
-    
-    @classmethod
-    @abstractmethod
-    def data(self, *args, **kwargs):
-        raise NotImplementedError
-    
-class InterRFDataSet(RawDataSet):
+class InterRFDataSet(DataSet, RhoAble):
     def __init__(self, nrot:int, nang:int, nele:int, nsamp:int, dphi, dalpha, Ts, tstart, alpha0=None, phi0=None):
         """Initialize the InterRFDataSet with given number of rotations, steering angles, elements, and samples with associated sampling periods"""
         # define the 4 axis of the total transformed dataset
@@ -105,53 +31,28 @@ class InterRFDataSet(RawDataSet):
         samples = SampledDataAxis(int(0), int(1), nrot*nang*nele*nsamp)
 
         # Store the axis sets
-        self.axes_in = DataAxisSet(samples=samples)
-        self.axes_out = DataAxisSet(rot=rot, steer=steer, ele=ele, t=t)
-        self.__data__ = None
-
-    def __getitem__(self, sel):
-        print(sel)
-        pass
+        self.axes = DataAxisSet(rot=rot, steer=steer, ele=ele, t=t)
+        self.__data__ : Data | None = None
 
     def transform(self, data):
-        print(type(data))
-        pass
+        if isinstance(data, np.ndarray):
+            self.__data__ = NumpyData(data, self.axes)
+        else: raise NotImplementedError("Unable to handle C types currenly")
+    
+    def get_SLSCProc_v1(self):
+        """return a Data object with the axes 't', 'tx', and 'rx'"""
+        if isinstance(self.__data__, NumpyData):
+            data = self.__data__.data
+            axes0 = self.__data__.axes
 
-    def data(self, type='numpy'):
-        pass
-
-class TXType(ABC):
-    @classmethod
-    @abstractmethod
-    def gentabs(self, points):
-        raise NotImplementedError
-    
-    @classmethod
-    @abstractmethod
-    def c_gentabs(self, points, Np:int):
-        raise NotImplementedError
-    
-    @classmethod
-    @abstractmethod
-    def cleartabs(self):
-        raise NotImplementedError
-    
-class RXType(ABC):
-    @classmethod
-    @abstractmethod
-    def gentabs(self, points):
-        raise NotImplementedError
-    
-    @classmethod
-    @abstractmethod
-    def c_gentabs(self, points, Np:int):
-        raise NotImplementedError
-    
-    @classmethod
-    @abstractmethod
-    def cleartabs(self):
-        raise NotImplementedError
-    
+            newaxes = {}
+            keyswap = {'steer':'tx', 'ele':'rx'}
+            for key, ax in axes0:
+                if key in ['steer', 'ele']: newaxes[keyswap[key]] = ax.__copy__()
+                else: newaxes[key] = ax.__copy__()
+            
+            return NumpyData(data, DataAxisSet(**newaxes))
+ 
 class FullRX(RXType):
     def __init__(self, xrefs, c=1540, dtype=ct.c_float):
         # vaidate the inputs are valid shapes
@@ -219,6 +120,9 @@ class FullRX(RXType):
     def __del__(self):
         # clear all tabs if any exists
         self.cleartabs()
+
+    def __getitem__(self, i:int):
+        return self.TXtabs[i]
 
 class PWTX(TXType):
     def __init__(self, alphas, xrefs, trefs, betas=None, c=1540, dtype=ct.c_float):
@@ -304,14 +208,18 @@ class PWTX(TXType):
         # clear all tabs if any exists
         self.cleartabs()
 
+    def __getitem__(self, i:int):
+        return self.TXtabs[i]
+
 class SLSCProc():
     def __init__(self, c, points, 
                  tx:TXType,
                  rx:RXType,
-                 lags:list|int=1, 
+                 lags:int=1, 
                  fnum:list|float|None=None,
                  fnorm:list|np.ndarray|None=None,
-                 dtype=ct.c_float, **kwargs):
+                 dtype=ct.c_float,
+                 **kwargs):
         """Initialize a SLSC processor. 
         Define the speed of sound, the 3D points to be reconstructed, the effective fnumber(s) and relative axis(axes)
 
@@ -338,8 +246,46 @@ class SLSCProc():
         self.tx.c_gentabs(self.points, self.c_Npoints.value)
         self.rx.c_gentabs(self.points, self.c_Npoints.value)
 
-    def __call__(self, data):
+    def __call__(self, data:Data):
         """Process a raw 3D data tensor (Ntx by Nrx by Nsamp)"""
-        if isinstance(data, np.ndarray):
-            if np.ndim(data) != 3: raise ValueError("Input data must be 3D (Ntx by Nrx by Nsamp)")
+        data.set_iter("tx", "rx", "t")
+        from pyrho.rho import __rho__
 
+        for subset in data:
+            Ntx = self.tx.Ntx
+            Nrx = self.rx.Nrx
+            Np = self.tx.Np
+            Nt = len(subset.axes['t'])
+            Ts = subset.axes['t'].delta
+            tstart = subset.axes['t'].start
+            dtw = tstart
+            tautx = ct.cast(
+                (ct.POINTER(ct.c_float)*len(self.tx.TXtabs))(*(self.tx.TXtabs)),
+                ct.POINTER(ct.POINTER(ct.c_float))
+                )
+            taurx = ct.cast(
+                (ct.POINTER(ct.c_float)*len(self.rx.RXtabs))(*(self.rx.RXtabs)),
+                ct.POINTER(ct.POINTER(ct.c_float))
+                )
+            print(subset, subset.data.shape, subset.axes.keys)
+            datalist = [copy2c(subset.data[i,:,:])[0] for i in range(Ntx)]
+            print(datalist)
+            cdata = ct.cast(
+                (ct.POINTER(ct.POINTER(ct.c_float)) * len(datalist))(*datalist),
+                ct.POINTER(ct.POINTER(ct.POINTER(ct.c_float)))
+            )
+            print(cdata)
+            clags = __rho__.lagNRhoSet(
+                ct.c_int(self.lags),
+                ct.c_int(Np),
+                ct.c_int(Ntx),
+                ct.c_int(Nrx),
+                ct.c_int(Nt),
+                ct.c_float(Ts),
+                ct.c_float(tstart),
+                ct.c_float(dtw),
+                ct.byref(tautx),
+                ct.byref(taurx),
+                ct.byref(cdata)
+                )
+            return copy2py(clags, ct.c_int(Np))

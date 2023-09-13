@@ -4,8 +4,8 @@ from setuptools import Extension, setup
 rho = Extension(
     name="pyrho.rho.__rho__",
     include_dirs=["pyrho/rho"],
-    depends=["pyrho/rho/rho.h"],
-    sources=["pyrho/rho/rho.c"]
+    depends=["pyrho/rho/rho.h", "pyrho/rho/cubic.h"],
+    sources=["pyrho/rho/rho.c", "pyrho/rho/cubic.c"]
 )
 
 # Compile the C extension and put it in the "rho" folder
@@ -41,6 +41,7 @@ setup(
         "numpy",
         "pyusel-cinpy @ https://github.com/wewightman/pyusel-cinpy/archive/main.tar.gz",
         "pyusel-interp @ https://github.com/wewightman/pyusel-interp/archive/main.tar.gz",
+        "pyusel-types @ https://github.com/wewightman/pyusel-types/archive/main.tar.gz",
     ],
     license="MIT",
     ext_modules=[rho, trig],
